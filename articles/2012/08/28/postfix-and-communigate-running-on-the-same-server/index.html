@@ -1,0 +1,188 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+<title>Postfix and CommuniGate running on the same server</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How to run Postfix and CommuniGatePro on the same server">
+<meta name="author" content="Philipp H">
+<meta name="generator" content="Spress v2.1.2">
+
+
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Postfix and CommuniGate running on the same server">
+<meta property="og:description" content="How to run Postfix and CommuniGatePro on the same server">
+<meta property="og:url" content="/articles/2012/08/28/postfix-and-communigate-running-on-the-same-server">
+<meta property="og:site_name" content="Philipps Homepage">
+
+<link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/touch-icon-iphone.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/assets/img/touch-icon-ipad.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-iphone-retina.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-ipad-retina.png">
+
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="/assets/css/style.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand">
+            <a class="label label-primary" href="/">Philipps Homepage</a>
+        </div>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+        <li><a href="/">
+        Home</a>
+    </li>
+        <li><a href="/projects">
+        Projects</a>
+    </li>
+    </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+</div>
+
+        <div class="container spresso-wrap">
+                <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2012/08/28/postfix-and-communigate-running-on-the-same-server">Postfix and CommuniGate running on the same server</a>
+        </h1>
+    </header>
+    
+    <p>General speaking one mailserver per server should be well enough. But there are cases where a second servers makes sense. For example nagios or icinga has a mailserver requirement within the package. Ubuntu and debian install postfix in this case automaticlly. This server conflicts with my running CommuniGate Pro Server which occupies the same port.</p>
+
+<p>In order to solve this issue I decided to use a minimal postfix configuration which allows them to work together. There are some benefits, for example local mails don’t get lost in case the real mailserver has a downtime.</p>
+
+<p>CommuniGate Pro listens additionally on 127.0.0.1:26 for this purpose. Normally 127.0.0.1:25 should be ok as well, but there is some kind of mail loop protection in postfix which forbids 127.0.0.1:25 as relayhost.</p>
+
+<p>This is my main.cf</p>
+
+<pre><code>smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
+biff = no
+append_dot_mydomain = no
+readme_directory = no
+
+# TLS parameters
+smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_use_tls=yes
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+myhostname = localhost
+
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = /etc/mailname
+mydestination = localhost
+relayhost = localhost:26
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = loopback-only
+inet_protocols = all
+</code></pre>
+
+<p>All smtp services are commented out in the master.cf:</p>
+
+<pre><code># Postfix master process configuration file.  For details on the format
+# of the file, see the master(5) manual page (command: "man 5 master").
+#
+# Do not forget to execute "postfix reload" after editing this file.
+#
+# ==========================================================================
+# service type  private unpriv  chroot  wakeup  maxproc command + args
+#               (yes)   (yes)   (yes)   (never) (100)
+# ==========================================================================
+#smtp      inet  n       -       -       -       -       smtpd
+#smtp      inet  n       -       -       -       1       postscreen
+#smtpd     pass  -       -       -       -       -       smtpd
+...
+</code></pre>
+
+    
+            <footer>    
+            <p>
+            	Posted by Philipp H on <time pubdate="pubdate">2012-08-28</time>
+            </p>
+
+                        <ul class="list-unstyled">
+                                    <li>
+                        <i class="fa fa-tags"></i>
+                                                    <a href="/tags/posts">posts</a>, 
+                                                    <a href="/tags/english">english</a>, 
+                                                    <a href="/tags/communigate">communigate</a>, 
+                                                    <a href="/tags/postfix">postfix</a> 
+                                            </li>
+                                                    <li>
+                        <i class="fa fa-folder"></i>
+                                                    <a href="/categories/articles">articles</a> 
+                                            </li>
+                            </ul>
+                    </footer>
+
+            </article>
+        </div>
+            
+        <footer id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-inline">
+        <li><a href="https://github.com/yosymfony/Spress-theme-spresso">
+        Go to Spresso theme web</a>
+    </li>
+    </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <ul class="list-inline">
+        
+        
+        
+        
+        <li>
+        <a href="https://github.com/runningman84">
+            <i class="fa fa-github fa-2x"></i>
+        </a>
+    </li>
+        
+        
+    </ul>
+                    </div>
+                </div>
+                <p class="text-center">
+                    <a href="https://github.com/yosymfony/Spress-theme-spresso" title="Spresso theme">
+                        <img src="/assets/img/spresso-logo.png"/>
+                    </a>
+                </p>
+                <p class="text-center">
+                    &copy; 2016 Philipp H.
+                    Powered by <a href="http://spress.yosymfony.com">Spress</a>.
+                </p>
+            </div>
+            
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+            <script src="/assets/js/bootstrap.min.js"></script>
+            
+                            <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+                <script>hljs.initHighlightingOnLoad();</script>
+                        
+                        </footer>
+    </body>
+</html>

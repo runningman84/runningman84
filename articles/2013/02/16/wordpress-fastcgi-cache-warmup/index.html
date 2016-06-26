@@ -1,0 +1,160 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+<title>WordPress fastcgi cache warmup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How to warump your fastcgi cache">
+<meta name="author" content="Philipp H">
+<meta name="generator" content="Spress v2.1.2">
+
+
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WordPress fastcgi cache warmup">
+<meta property="og:description" content="How to warump your fastcgi cache">
+<meta property="og:url" content="/articles/2013/02/16/wordpress-fastcgi-cache-warmup">
+<meta property="og:site_name" content="Philipps Homepage">
+
+<link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/touch-icon-iphone.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/assets/img/touch-icon-ipad.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-iphone-retina.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-ipad-retina.png">
+
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="/assets/css/style.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand">
+            <a class="label label-primary" href="/">Philipps Homepage</a>
+        </div>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+        <li><a href="/">
+        Home</a>
+    </li>
+        <li><a href="/projects">
+        Projects</a>
+    </li>
+    </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+</div>
+
+        <div class="container spresso-wrap">
+                <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2013/02/16/wordpress-fastcgi-cache-warmup">WordPress fastcgi cache warmup</a>
+        </h1>
+    </header>
+    
+    <p>In order to reduce the loadup times for my blog I have created a cache warmup script. The script parses the wordpress sitemap and calls all urls via curl. The sitemap is created by <a href="https://wordpress.org/plugins/google-sitemap-generator/">Google Sitemap Generator Plugin</a> and contains all urls.</p>
+
+<pre><code>#!/bin/bash
+# wp_warmup.sh
+
+cat /var/www/wordpress/sitemap.xml | grep loc | awk -F "&lt;loc&gt;" '{ print $2 }' | awk -F "&lt;/loc&gt;" '{ print $1 }'  | sort | uniq | xargs curl -A warmup -silent  &gt;/dev/null
+</code></pre>
+
+<p>The script is called by this crontab entry every hour:</p>
+
+<pre><code># m h  dom mon dow   command
+0 * * * * /usr/local/bin/wp_warmup.sh
+</code></pre>
+
+<p>Nginx (based on this <a href="https://easyengine.io/wordpress-nginx/tutorials/single-site/fastcgi-cache-with-purging/">config</a>) has to be configured accordingly</p>
+
+<pre><code>fastcgi_cache_valid      200 302 59m;
+</code></pre>
+
+<p>This combunation works very well. My google response time statistic looks much better now. Google and other search engines use the resposne time for their ranking. This setup will ensure that my website is always fast for the search engines.</p>
+
+    
+            <footer>    
+            <p>
+            	Posted by Philipp H on <time pubdate="pubdate">2013-02-16</time>
+            </p>
+
+                        <ul class="list-unstyled">
+                                    <li>
+                        <i class="fa fa-tags"></i>
+                                                    <a href="/tags/posts">posts</a>, 
+                                                    <a href="/tags/cache">cache</a>, 
+                                                    <a href="/tags/nginx">nginx</a>, 
+                                                    <a href="/tags/warmup">warmup</a>, 
+                                                    <a href="/tags/wordpress">wordpress</a>, 
+                                                    <a href="/tags/english">english</a> 
+                                            </li>
+                                                    <li>
+                        <i class="fa fa-folder"></i>
+                                                    <a href="/categories/articles">articles</a> 
+                                            </li>
+                            </ul>
+                    </footer>
+
+            </article>
+        </div>
+            
+        <footer id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-inline">
+        <li><a href="https://github.com/yosymfony/Spress-theme-spresso">
+        Go to Spresso theme web</a>
+    </li>
+    </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <ul class="list-inline">
+        
+        
+        
+        
+        <li>
+        <a href="https://github.com/runningman84">
+            <i class="fa fa-github fa-2x"></i>
+        </a>
+    </li>
+        
+        
+    </ul>
+                    </div>
+                </div>
+                <p class="text-center">
+                    <a href="https://github.com/yosymfony/Spress-theme-spresso" title="Spresso theme">
+                        <img src="/assets/img/spresso-logo.png"/>
+                    </a>
+                </p>
+                <p class="text-center">
+                    &copy; 2016 Philipp H.
+                    Powered by <a href="http://spress.yosymfony.com">Spress</a>.
+                </p>
+            </div>
+            
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+            <script src="/assets/js/bootstrap.min.js"></script>
+            
+                            <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+                <script>hljs.initHighlightingOnLoad();</script>
+                        
+                        </footer>
+    </body>
+</html>

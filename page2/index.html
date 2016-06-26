@@ -1,0 +1,412 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+<title>Philipps Homepage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Some tech stuff">
+<meta name="author" content="Philipp H">
+<meta name="generator" content="Spress v2.1.2">
+
+
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Philipps Homepage">
+<meta property="og:description" content="Some tech stuff">
+<meta property="og:url" content="/page2">
+<meta property="og:site_name" content="Philipps Homepage">
+
+<link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/touch-icon-iphone.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/assets/img/touch-icon-ipad.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-iphone-retina.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-ipad-retina.png">
+
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="/assets/css/style.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand">
+            <a class="label label-primary" href="/">Philipps Homepage</a>
+        </div>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+        <li><a href="/">
+        Home</a>
+    </li>
+        <li><a href="/projects">
+        Projects</a>
+    </li>
+    </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+</div>
+
+        <div class="container spresso-wrap">
+                            <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2013/01/06/nginx-proxy-for-communigate-with-spdy-and-oscp-stapling">Nginx Proxy for CommuniGate with SPDY and OSCP Stapling</a>
+        </h1>
+    </header>
+    
+    <p>For quite a long time now I have running CommuniGate web interfaces behind a nginx proxy. Thus it is possible to accelerate the web interface and deny attackers in the first place.</p>
+
+<p>I use nginx 1.3.x with some addational modules like naxsi (WAF) and ngx_log_if (suppress logs in certain cases).</p>
+
+<p>This sample configuration allows you to host the webmail interface and the webadmin part as a nginx vhost.</p>
+
+<p>So you can use modern technics like SPDY and OSCP before they have been integrated into CommuniGate itself (if ever).</p>
+
+<pre><code># HTTP server
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name  example.example.com;
+
+    rewrite          ^(.*)          https://$server_name$1 permanent;
+}
+
+# HTTPS server
+#
+server {
+    listen 443 ssl spdy;
+    listen [::]:443 ssl spdy;
+
+    server_name  mail.example.com;
+
+    # SSL
+    ssl on;
+    ssl_certificate      /etc/ssl/private/mail.example.com.pem;
+    ssl_certificate_key      /etc/ssl/private/mail.example.com.key;
+    ssl_trusted_certificate /etc/ssl/private/mail.example.com.trust;
+
+    ## OCSP Stapling
+    resolver 127.0.0.1;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+    include /etc/nginx/proxy_params;
+
+    # Forbids crawling
+    location /robots.txt {
+        alias /var/www/stuff/norobots.txt;
+    }
+    # Forbids dot files
+    location ~ /\. {
+        deny all;
+    }
+    # Webmail
+    location / {
+        proxy_pass        http://localhost:8100;
+        # WAF
+        include    /etc/nginx/naxsi.rules;
+    }
+    # Webmail Skins
+    location /SkinFiles {
+        access_log_bypass_if ($status = 200);
+        expires 24h;
+        proxy_cache_valid 24h;
+        proxy_pass        http://localhost:8100;
+        # WAF
+        include    /etc/nginx/naxsi.rules;
+    }
+    # Webadmin
+    location /admin {
+        proxy_pass        http://localhost:8010/Master;
+        proxy_set_header   Host             localhost;
+        proxy_redirect http://localhost/Master https://mail.example.com/admin;
+        # WAF
+        include    /etc/nginx/naxsi.rules;
+    }
+    # WAF
+    location /RequestDenied {
+        proxy_pass http://127.0.0.1:8082;
+    }
+}
+</code></pre>
+
+    
+    </article>
+            <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2013/01/05/curl-ipv6-test">Curl IPv6 Test</a>
+        </h1>
+    </header>
+    
+    <p>Since IPv6 is deployed to customers from providers like Unitymedia and Kabeldeutschland, I have checked if my website is reachable via IPv6 or not. Normally curl uses IPv4, you can force curl to use IPv6 by defining the IPv6 address or adding the param “-6″.</p>
+
+<pre><code>user@laladin# curl -g -k -I -H "Host: www.hellmi.de" http://[2600:3c02::f03c:91ff:fe96:b43f]/
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sat, 05 Jan 2013 16:00:52 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: keep-alive
+X-Pingback: http://www.hellmi.de/xmlrpc.php
+
+user@laladin# curl -g -k -I -6 http://www.hellmi.de/
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sat, 05 Jan 2013 16:06:44 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: keep-alive
+X-Pingback: http://www.hellmi.de/xmlrpc.php
+
+user@laladin# curl -g -k -I -6 http://www6.hellmi.de/
+HTTP/1.1 301 Moved Permanently
+Server: nginx
+Date: Sat, 05 Jan 2013 16:05:22 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: http://www.hellmi.de/
+</code></pre>
+
+<p>There is still some way to go before we are getting used to this ip format:
+2600:3c02::f03c:91ff:fe96:b43f</p>
+
+<p><img src="http://ipv6-test.com/button-ipv6-big.png" alt="IPv6 Test" /></p>
+
+    
+    </article>
+            <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2012/10/07/communigate-installation-debian-ubuntu">CommuniGate Installation Debian & Ubuntu</a>
+        </h1>
+    </header>
+    
+    <p>Stalker released a new version of CommuniGate Pro recently. The installation procedure on Debian and Ubuntu is quite easy using aladin.</p>
+
+<p>Download of the new release</p>
+
+<pre><code>root@aladin:/tmp# wget ftp://stalker.com/pub/CommuniGatePro/5.4/CGatePro-Linux-5.4-8.i386.rpm
+--2012-10-07 16:32:45--  ftp://stalker.com/pub/CommuniGatePro/5.4/CGatePro-Linux-5.4-8.i386.rpm
+           =&gt; »CGatePro-Linux-5.4-8.i386.rpm«
+Auflösen des Hostnamen »stalker.com (stalker.com)«... 72.20.112.34
+Verbindungsaufbau zu stalker.com (stalker.com)|72.20.112.34|:21... verbunden.
+Anmelden als anonymous ... Angemeldet!
+==&gt; SYST ... fertig.    ==&gt; PWD ... fertig.
+==&gt; TYPE I ... fertig.  ==&gt; CWD (1) /pub/CommuniGatePro/5.4 ... fertig.
+==&gt; SIZE CGatePro-Linux-5.4-8.i386.rpm ... 71516878
+==&gt; PASV ... fertig.    ==&gt; RETR CGatePro-Linux-5.4-8.i386.rpm ... fertig.
+Länge: 71516878 (68M) (unmaßgeblich)
+
+100%[================================================================================================================================&gt;] 71.516.878  2,13M/s   in 25s     
+
+2012-10-07 16:33:11 (2,72 MB/s) - »»CGatePro-Linux-5.4-8.i386.rpm«« gespeichert [71516878]
+</code></pre>
+
+<p>Stopping of the service</p>
+
+<pre><code>root@aladin:/tmp# /etc/init.d/communigate stop
+Shutting down the CommuniGate Pro Server
+</code></pre>
+
+<p>Installation</p>
+
+<pre><code>root@aladin:/tmp# alien -i CGatePro-Linux-5.4-8.i386.rpm
+Warning: Skipping conversion of scripts in package CGatePro-Linux: postinst prerm
+Warning: Use the --scripts parameter to include the scripts.
+        dpkg --no-force-overwrite -i cgatepro-linux_5.4-9_i386.deb
+(Lese Datenbank ... 60745 Dateien und Verzeichnisse sind derzeit installiert.)
+Vorbereitung zum Ersetzen von cgatepro-linux 5.4-8 (durch cgatepro-linux_5.4-9_i386.deb) ...
+Ersatz für cgatepro-linux wird entpackt ...
+cgatepro-linux (5.4-9) wird eingerichtet ...
+</code></pre>
+
+<p>Starting the service again</p>
+
+<pre><code>root@aladin:/tmp# /etc/init.d/communigate start
+Starting CommuniGate Proroot@aladin:/tmp#
+</code></pre>
+
+<p>A final test shows that everything is fine again</p>
+
+<pre><code>root@aladin:/tmp# telnet localhost 25
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+220 aladin.members.linode.com ESMTP CommuniGate Pro 5.4.8 is glad to see you!
+quit
+221 aladin.members.linode.com CommuniGate Pro SMTP closing connection
+Connection closed by foreign host.
+</code></pre>
+
+    
+    </article>
+            <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2012/08/28/postfix-and-communigate-running-on-the-same-server">Postfix and CommuniGate running on the same server</a>
+        </h1>
+    </header>
+    
+    <p>General speaking one mailserver per server should be well enough. But there are cases where a second servers makes sense. For example nagios or icinga has a mailserver requirement within the package. Ubuntu and debian install postfix in this case automaticlly. This server conflicts with my running CommuniGate Pro Server which occupies the same port.</p>
+
+<p>In order to solve this issue I decided to use a minimal postfix configuration which allows them to work together. There are some benefits, for example local mails don’t get lost in case the real mailserver has a downtime.</p>
+
+<p>CommuniGate Pro listens additionally on 127.0.0.1:26 for this purpose. Normally 127.0.0.1:25 should be ok as well, but there is some kind of mail loop protection in postfix which forbids 127.0.0.1:25 as relayhost.</p>
+
+<p>This is my main.cf</p>
+
+<pre><code>smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
+biff = no
+append_dot_mydomain = no
+readme_directory = no
+
+# TLS parameters
+smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_use_tls=yes
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+myhostname = localhost
+
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = /etc/mailname
+mydestination = localhost
+relayhost = localhost:26
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = loopback-only
+inet_protocols = all
+</code></pre>
+
+<p>All smtp services are commented out in the master.cf:</p>
+
+<pre><code># Postfix master process configuration file.  For details on the format
+# of the file, see the master(5) manual page (command: "man 5 master").
+#
+# Do not forget to execute "postfix reload" after editing this file.
+#
+# ==========================================================================
+# service type  private unpriv  chroot  wakeup  maxproc command + args
+#               (yes)   (yes)   (yes)   (never) (100)
+# ==========================================================================
+#smtp      inet  n       -       -       -       -       smtpd
+#smtp      inet  n       -       -       -       1       postscreen
+#smtpd     pass  -       -       -       -       -       smtpd
+...
+</code></pre>
+
+    
+    </article>
+            <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2012/08/17/fritzbox-as-an-external-pstn-gateway-for-communigate-pro">FritzBox as an external PSTN Gateway for CommuniGate Pro</a>
+        </h1>
+    </header>
+    
+    <p>A FritzBox can act as a pstn Gateway for CommuniGate. This allows you to run CommuniGate somewhere in the cloud and still use your local phone number.</p>
+
+<p>There are a few steps needed in order to get this setup up and running. I will show you an example, in this case FritzBox has the ip address 192.168.100.2 and the CommuniGate server  is running on a vps. Both systems are connected via a secure openvpn connection.</p>
+
+<ol>
+<li>Configuration of a new lan ip phone device in FritzBox</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_box1.png" alt="Grand Canyon" /></p>
+
+<p><img src="/assets/img/cg_fritz_box2.png" alt="Grand Canyon" /></p>
+
+<ol start="2">
+<li>Adding of some CommuniGate router settings</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_router.png" alt="Grand Canyon" /></p>
+
+<ol start="3">
+<li>Connecting a CommuniGate account to the FritzBox ip phone account (incoming)</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_rsip.png" alt="Grand Canyon" /></p>
+
+<ol start="4">
+<li>Connecting a CommuniGate account to the FritzBox ip phone account (outgoing)</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_pstn1.png" alt="Grand Canyon" /></p>
+
+    
+    </article>
+    
+    <ul class="pagination">
+					<li>
+                <a class="prev" href="/">
+                    &laquo; Newer
+                </a>
+            </li>
+		
+					<li><a href="/page3">Older &raquo;</a></li>
+			</ul>
+
+        </div>
+            
+        <footer id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-inline">
+        <li><a href="https://github.com/yosymfony/Spress-theme-spresso">
+        Go to Spresso theme web</a>
+    </li>
+    </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <ul class="list-inline">
+        
+        
+        
+        
+        <li>
+        <a href="https://github.com/runningman84">
+            <i class="fa fa-github fa-2x"></i>
+        </a>
+    </li>
+        
+        
+    </ul>
+                    </div>
+                </div>
+                <p class="text-center">
+                    <a href="https://github.com/yosymfony/Spress-theme-spresso" title="Spresso theme">
+                        <img src="/assets/img/spresso-logo.png"/>
+                    </a>
+                </p>
+                <p class="text-center">
+                    &copy; 2016 Philipp H.
+                    Powered by <a href="http://spress.yosymfony.com">Spress</a>.
+                </p>
+            </div>
+            
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+            <script src="/assets/js/bootstrap.min.js"></script>
+            
+                            <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+                <script>hljs.initHighlightingOnLoad();</script>
+                        
+                    </footer>
+    </body>
+</html>

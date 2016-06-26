@@ -1,0 +1,190 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+<title>Encrypted VPS backup with dropbox and GnuPG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How to do a secure backup of your vps">
+<meta name="author" content="Philipp H">
+<meta name="generator" content="Spress v2.1.2">
+
+
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Encrypted VPS backup with dropbox and GnuPG">
+<meta property="og:description" content="How to do a secure backup of your vps">
+<meta property="og:url" content="/articles/2012/08/07/encrypted-vps-backup-with-dropbox-and-gnupg">
+<meta property="og:site_name" content="Philipps Homepage">
+
+<link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/touch-icon-iphone.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/assets/img/touch-icon-ipad.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-iphone-retina.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-ipad-retina.png">
+
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="/assets/css/style.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand">
+            <a class="label label-primary" href="/">Philipps Homepage</a>
+        </div>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+        <li><a href="/">
+        Home</a>
+    </li>
+        <li><a href="/projects">
+        Projects</a>
+    </li>
+    </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+</div>
+
+        <div class="container spresso-wrap">
+                <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2012/08/07/encrypted-vps-backup-with-dropbox-and-gnupg">Encrypted VPS backup with dropbox and GnuPG</a>
+        </h1>
+    </header>
+    
+    <p>Today it is unclear how long a vps provider stays in business. Therefore I have been looking for a backup solution of my vps server in the cloud.</p>
+
+<ul>
+<li>Reliable backup transfer (daily)</li>
+<li>Mutiple backup revisions</li>
+<li>No unencrypted files on the backup storage</li>
+<li>No private keys or passwords on the source system</li>
+<li>Only one unencrypted copy at any time (running mailserver itself)</li>
+</ul>
+
+<p>Dropbox seems to be perfect for this usecase. Dropbox syncs all changes in the background without X11. Dropbox offers mutiple revisions per file.</p>
+
+<p>GnuPG is the encryption solution. It is possible to save the private key in a secure local location. For encryption purpose only the public key is needed.</p>
+
+<p>My mailserver is using CommuniGate Pro but this method can be used for every other service as well. Backup of a mailserver is quite easy cause a small downtime doesn’t do any harm. Incomming mails will be delayed during the backup process.</p>
+
+<pre><code>#!/bin/sh
+DATE=`date +%Y-%m-%d`
+SOURCE=/var/CommuniGate
+DEST=/home/phil/Dropbox/Share11
+#FILE=$DEST/backup-$DATE.tar.bz2.gpg
+FILE=$DEST/cgate.tar.bz2.gpg
+KEY=ABC12345
+
+PRECMD="/etc/init.d/communigate stop"
+POSTCMD="/etc/init.d/communigate start"
+
+$PRECMD
+sleep 1
+echo "Starting backup operation"
+tar -cjvf - $SOURCE | gpg --encrypt -r $KEY &gt; $FILE
+echo "Finished backup operation"
+date
+du -s -h $FILE
+sleep 1
+$POSTCMD
+find $DEST -type f -name "cgate-*" -mtime +1 -exec rm {} \;
+</code></pre>
+
+<p>This is the result output</p>
+
+<pre><code>Shutting down the CommuniGate Pro Server
+Starting backup operation
+Finished backup operation
+Tue Aug  7 07:39:36 UTC 2012
+279M    /home/phil/Dropbox/Share11/cgate.tar.bz2.gpg
+Starting CommuniGate Pro
+This script can be placed inside the crontab in order to run it daily.
+</code></pre>
+
+    
+            <footer>    
+            <p>
+            	Posted by Philipp H on <time pubdate="pubdate">2012-08-07</time>
+            </p>
+
+                        <ul class="list-unstyled">
+                                    <li>
+                        <i class="fa fa-tags"></i>
+                                                    <a href="/tags/posts">posts</a>, 
+                                                    <a href="/tags/english">english</a>, 
+                                                    <a href="/tags/communigate">communigate</a>, 
+                                                    <a href="/tags/backup">backup</a>, 
+                                                    <a href="/tags/dropbox">dropbox</a>, 
+                                                    <a href="/tags/gnupg">gnupg</a>, 
+                                                    <a href="/tags/vps">vps</a> 
+                                            </li>
+                                                    <li>
+                        <i class="fa fa-folder"></i>
+                                                    <a href="/categories/articles">articles</a> 
+                                            </li>
+                            </ul>
+                    </footer>
+
+            </article>
+        </div>
+            
+        <footer id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-inline">
+        <li><a href="https://github.com/yosymfony/Spress-theme-spresso">
+        Go to Spresso theme web</a>
+    </li>
+    </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <ul class="list-inline">
+        
+        
+        
+        
+        <li>
+        <a href="https://github.com/runningman84">
+            <i class="fa fa-github fa-2x"></i>
+        </a>
+    </li>
+        
+        
+    </ul>
+                    </div>
+                </div>
+                <p class="text-center">
+                    <a href="https://github.com/yosymfony/Spress-theme-spresso" title="Spresso theme">
+                        <img src="/assets/img/spresso-logo.png"/>
+                    </a>
+                </p>
+                <p class="text-center">
+                    &copy; 2016 Philipp H.
+                    Powered by <a href="http://spress.yosymfony.com">Spress</a>.
+                </p>
+            </div>
+            
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+            <script src="/assets/js/bootstrap.min.js"></script>
+            
+                            <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+                <script>hljs.initHighlightingOnLoad();</script>
+                        
+                        </footer>
+    </body>
+</html>

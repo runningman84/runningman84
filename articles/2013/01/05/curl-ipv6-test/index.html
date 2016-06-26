@@ -1,0 +1,171 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+<title>Curl IPv6 Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How to test IPv6 using curl">
+<meta name="author" content="Philipp H">
+<meta name="generator" content="Spress v2.1.2">
+
+
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Curl IPv6 Test">
+<meta property="og:description" content="How to test IPv6 using curl">
+<meta property="og:url" content="/articles/2013/01/05/curl-ipv6-test">
+<meta property="og:site_name" content="Philipps Homepage">
+
+<link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/touch-icon-iphone.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/assets/img/touch-icon-ipad.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-iphone-retina.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-ipad-retina.png">
+
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="/assets/css/style.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand">
+            <a class="label label-primary" href="/">Philipps Homepage</a>
+        </div>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+        <li><a href="/">
+        Home</a>
+    </li>
+        <li><a href="/projects">
+        Projects</a>
+    </li>
+    </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+</div>
+
+        <div class="container spresso-wrap">
+                <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2013/01/05/curl-ipv6-test">Curl IPv6 Test</a>
+        </h1>
+    </header>
+    
+    <p>Since IPv6 is deployed to customers from providers like Unitymedia and Kabeldeutschland, I have checked if my website is reachable via IPv6 or not. Normally curl uses IPv4, you can force curl to use IPv6 by defining the IPv6 address or adding the param “-6″.</p>
+
+<pre><code>user@laladin# curl -g -k -I -H "Host: www.hellmi.de" http://[2600:3c02::f03c:91ff:fe96:b43f]/
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sat, 05 Jan 2013 16:00:52 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: keep-alive
+X-Pingback: http://www.hellmi.de/xmlrpc.php
+
+user@laladin# curl -g -k -I -6 http://www.hellmi.de/
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sat, 05 Jan 2013 16:06:44 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: keep-alive
+X-Pingback: http://www.hellmi.de/xmlrpc.php
+
+user@laladin# curl -g -k -I -6 http://www6.hellmi.de/
+HTTP/1.1 301 Moved Permanently
+Server: nginx
+Date: Sat, 05 Jan 2013 16:05:22 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: http://www.hellmi.de/
+</code></pre>
+
+<p>There is still some way to go before we are getting used to this ip format:
+2600:3c02::f03c:91ff:fe96:b43f</p>
+
+<p><img src="http://ipv6-test.com/button-ipv6-big.png" alt="IPv6 Test" /></p>
+
+    
+            <footer>    
+            <p>
+            	Posted by Philipp H on <time pubdate="pubdate">2013-01-05</time>
+            </p>
+
+                        <ul class="list-unstyled">
+                                    <li>
+                        <i class="fa fa-tags"></i>
+                                                    <a href="/tags/posts">posts</a>, 
+                                                    <a href="/tags/nginx">nginx</a>, 
+                                                    <a href="/tags/english">english</a>, 
+                                                    <a href="/tags/ipv6">ipv6</a>, 
+                                                    <a href="/tags/curl">curl</a> 
+                                            </li>
+                                                    <li>
+                        <i class="fa fa-folder"></i>
+                                                    <a href="/categories/articles">articles</a> 
+                                            </li>
+                            </ul>
+                    </footer>
+
+            </article>
+        </div>
+            
+        <footer id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-inline">
+        <li><a href="https://github.com/yosymfony/Spress-theme-spresso">
+        Go to Spresso theme web</a>
+    </li>
+    </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <ul class="list-inline">
+        
+        
+        
+        
+        <li>
+        <a href="https://github.com/runningman84">
+            <i class="fa fa-github fa-2x"></i>
+        </a>
+    </li>
+        
+        
+    </ul>
+                    </div>
+                </div>
+                <p class="text-center">
+                    <a href="https://github.com/yosymfony/Spress-theme-spresso" title="Spresso theme">
+                        <img src="/assets/img/spresso-logo.png"/>
+                    </a>
+                </p>
+                <p class="text-center">
+                    &copy; 2016 Philipp H.
+                    Powered by <a href="http://spress.yosymfony.com">Spress</a>.
+                </p>
+            </div>
+            
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+            <script src="/assets/js/bootstrap.min.js"></script>
+            
+                            <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+                <script>hljs.initHighlightingOnLoad();</script>
+                        
+                        </footer>
+    </body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+<title>Nginx 1.3.12 GeoIP IPv6</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How to lookup IPv6 geo locations">
+<meta name="author" content="Philipp H">
+<meta name="generator" content="Spress v2.1.2">
+
+
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx 1.3.12 GeoIP IPv6">
+<meta property="og:description" content="How to lookup IPv6 geo locations">
+<meta property="og:url" content="/articles/2013/02/10/nginx-1-3-12-geoip-ipv6">
+<meta property="og:site_name" content="Philipps Homepage">
+
+<link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/touch-icon-iphone.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/assets/img/touch-icon-ipad.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-iphone-retina.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-ipad-retina.png">
+
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="/assets/css/style.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand">
+            <a class="label label-primary" href="/">Philipps Homepage</a>
+        </div>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+        <li><a href="/">
+        Home</a>
+    </li>
+        <li><a href="/projects">
+        Projects</a>
+    </li>
+    </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+</div>
+
+        <div class="container spresso-wrap">
+                <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2013/02/10/nginx-1-3-12-geoip-ipv6">Nginx 1.3.12 GeoIP IPv6</a>
+        </h1>
+    </header>
+    
+    <p>Since release 1.3.12 the geoip module supports IPv6. This nginx configuration works fine for me:</p>
+
+<pre><code>geoip_country   /usr/share/GeoIP/GeoIPv6.dat; # the country IP database
+geoip_city      /usr/share/GeoIP/GeoLiteCityv6.dat; # the city IP database
+</code></pre>
+
+<p>I use $geoip_country_code in my logformat in order to log the country:</p>
+
+<pre><code>log_format  main  '$host $remote_addr - $remote_user [$time_local] "$request" '
+                  '$status $body_bytes_sent "$http_referer" '
+                  '"$http_user_agent" "$http_x_forwarded_for" '
+                  '$ssl_cipher $request_time $gzip_ratio '
+                  '$upstream_addr $upstream_response_time $geoip_country_code';
+</code></pre>
+
+<p>A quick test shows eveything is working as designed:</p>
+
+<pre><code>user@aladin:/home/phil# curl -I -4  http://www.hellmi.de
+HTTP/1.1 301 Moved Permanently
+Server: nginx
+Date: Sun, 10 Feb 2013 10:48:07 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://www.hellmi.de/en/
+
+user@aladin:/home/phil# curl -I -6  http://www.hellmi.de
+HTTP/1.1 301 Moved Permanently
+Server: nginx
+Date: Sun, 10 Feb 2013 10:48:12 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://www.hellmi.de/en/
+
+user@aladin:/home/phil# tail -2 /var/log/nginx/access.log
+www.hellmi.de 66.228.57.159 - - [10/Feb/2013:10:48:07 +0000] "HEAD / HTTP/1.1" 301 0 "-" "curl/7.22.0 (i686-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3" "-" - 0.000 - - - US
+www.hellmi.de 2600:3c02::f03c:91ff:fe96:b43f - - [10/Feb/2013:10:48:12 +0000] "HEAD / HTTP/1.1" 301 0 "-" "curl/7.22.0 (i686-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3" "-" - 0.000 - - - US
+</code></pre>
+
+<p>The IPv6 database contains IPv4 addresses as well, thus resolving both types work using the same configuration.</p>
+
+    
+            <footer>    
+            <p>
+            	Posted by Philipp H on <time pubdate="pubdate">2013-02-10</time>
+            </p>
+
+                        <ul class="list-unstyled">
+                                    <li>
+                        <i class="fa fa-tags"></i>
+                                                    <a href="/tags/posts">posts</a>, 
+                                                    <a href="/tags/nginx">nginx</a>, 
+                                                    <a href="/tags/english">english</a>, 
+                                                    <a href="/tags/ipv6">ipv6</a>, 
+                                                    <a href="/tags/geoip">geoip</a> 
+                                            </li>
+                                                    <li>
+                        <i class="fa fa-folder"></i>
+                                                    <a href="/categories/articles">articles</a> 
+                                            </li>
+                            </ul>
+                    </footer>
+
+            </article>
+        </div>
+            
+        <footer id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-inline">
+        <li><a href="https://github.com/yosymfony/Spress-theme-spresso">
+        Go to Spresso theme web</a>
+    </li>
+    </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <ul class="list-inline">
+        
+        
+        
+        
+        <li>
+        <a href="https://github.com/runningman84">
+            <i class="fa fa-github fa-2x"></i>
+        </a>
+    </li>
+        
+        
+    </ul>
+                    </div>
+                </div>
+                <p class="text-center">
+                    <a href="https://github.com/yosymfony/Spress-theme-spresso" title="Spresso theme">
+                        <img src="/assets/img/spresso-logo.png"/>
+                    </a>
+                </p>
+                <p class="text-center">
+                    &copy; 2016 Philipp H.
+                    Powered by <a href="http://spress.yosymfony.com">Spress</a>.
+                </p>
+            </div>
+            
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+            <script src="/assets/js/bootstrap.min.js"></script>
+            
+                            <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+                <script>hljs.initHighlightingOnLoad();</script>
+                        
+                        </footer>
+    </body>
+</html>

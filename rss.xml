@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Philipps Homepage</title>
+        <link></link>
+        <description>RSS feed for Philipps Homepage</description>
+        <atom:link href="/rss.xml" rel="self" type="application/rss+xml" />
+                    <item>
+                <title>WordPress fastcgi cache warmup</title>
+                <description><![CDATA[<p>In order to reduce the loadup times for my blog I have created a cache warmup script. The script parses the wordpress sitemap and calls all urls via curl. The sitemap is created by <a href="https://wordpress.org/plugins/google-sitemap-generator/">Google Sitemap Generator Plugin</a> and contains all urls.</p>
+
+<pre><code>#!/bin/bash
+# wp_warmup.sh
+
+cat /var/www/wordpress/sitemap.xml | grep loc | awk -F "&lt;loc&gt;" '{ print $2 }' | awk -F "&lt;/loc&gt;" '{ print $1 }'  | sort | uniq | xargs curl -A warmup -silent  &gt;/dev/null
+</code></pre>
+
+<p>The script is called by this crontab entry every hour:</p>
+
+<pre><code># m h  dom mon dow   command
+0 * * * * /usr/local/bin/wp_warmup.sh
+</code></pre>
+
+<p>Nginx (based on this <a href="https://easyengine.io/wordpress-nginx/tutorials/single-site/fastcgi-cache-with-purging/">config</a>) has to be configured accordingly</p>
+
+<pre><code>fastcgi_cache_valid      200 302 59m;
+</code></pre>
+
+<p>This combunation works very well. My google response time statistic looks much better now. Google and other search engines use the resposne time for their ranking. This setup will ensure that my website is always fast for the search engines.</p>
+]]></description>
+                <link>/articles/2013/02/16/wordpress-fastcgi-cache-warmup</link>
+                <pubDate>Sat, 16 Feb 2013 00:00:00 +0000</pubDate>
+                <guid>/articles/2013/02/16/wordpress-fastcgi-cache-warmup</guid>
+            </item>
+                    <item>
+                <title>Nginx 1.3.12 GeoIP IPv6</title>
+                <description><![CDATA[<p>Since release 1.3.12 the geoip module supports IPv6. This nginx configuration works fine for me:</p>
+
+<pre><code>geoip_country   /usr/share/GeoIP/GeoIPv6.dat; # the country IP database
+geoip_city      /usr/share/GeoIP/GeoLiteCityv6.dat; # the city IP database
+</code></pre>
+
+<p>I use $geoip_country_code in my logformat in order to log the country:</p>
+
+<pre><code>log_format  main  '$host $remote_addr - $remote_user [$time_local] "$request" '
+                  '$status $body_bytes_sent "$http_referer" '
+                  '"$http_user_agent" "$http_x_forwarded_for" '
+                  '$ssl_cipher $request_time $gzip_ratio '
+                  '$upstream_addr $upstream_response_time $geoip_country_code';
+</code></pre>
+
+<p>A quick test shows eveything is working as designed:</p>
+
+<pre><code>user@aladin:/home/phil# curl -I -4  http://www.hellmi.de
+HTTP/1.1 301 Moved Permanently
+Server: nginx
+Date: Sun, 10 Feb 2013 10:48:07 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://www.hellmi.de/en/
+
+user@aladin:/home/phil# curl -I -6  http://www.hellmi.de
+HTTP/1.1 301 Moved Permanently
+Server: nginx
+Date: Sun, 10 Feb 2013 10:48:12 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://www.hellmi.de/en/
+
+user@aladin:/home/phil# tail -2 /var/log/nginx/access.log
+www.hellmi.de 66.228.57.159 - - [10/Feb/2013:10:48:07 +0000] "HEAD / HTTP/1.1" 301 0 "-" "curl/7.22.0 (i686-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3" "-" - 0.000 - - - US
+www.hellmi.de 2600:3c02::f03c:91ff:fe96:b43f - - [10/Feb/2013:10:48:12 +0000] "HEAD / HTTP/1.1" 301 0 "-" "curl/7.22.0 (i686-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3" "-" - 0.000 - - - US
+</code></pre>
+
+<p>The IPv6 database contains IPv4 addresses as well, thus resolving both types work using the same configuration.</p>
+]]></description>
+                <link>/articles/2013/02/10/nginx-1-3-12-geoip-ipv6</link>
+                <pubDate>Sun, 10 Feb 2013 00:00:00 +0000</pubDate>
+                <guid>/articles/2013/02/10/nginx-1-3-12-geoip-ipv6</guid>
+            </item>
+                    <item>
+                <title>WordPress auto language detection with nginx</title>
+                <description><![CDATA[<p>My blog uses the “Stella plugin free” wordpress plugin. Unfortunately this plugin doesn’t support auto language detection in the free version. But nginx has a plugin for language detection which can do the job as well. This is my sample configuration which works fine.</p>
+
+<pre><code>server {
+    listen 80;
+    listen [::]:80;
+
+    server_name hellmi.de www6.hellmi.de www.hellmi.de;
+
+    set_from_accept_language $lang en de;
+
+    location / {
+        rewrite ^/(.*) /$lang/$1;
+    }
+
+    location = /en {
+        rewrite ^ /en/;
+    }
+    location /en/ {
+        rewrite ^/en/(.*) https://www.hellmi.de/en/$1 permanent;
+    }
+
+    location = /de {
+        rewrite ^ /de/;
+    }
+    location /de/ {
+        rewrite ^/de/(.*) https://www.hellmi.de/$1 permanent;
+    }     
+}
+</code></pre>
+
+<p>The nginx module can be found here: <a href="https://github.com/giom/nginx_accept_language_module">nginx_accept_language_module</a></p>
+]]></description>
+                <link>/articles/2013/02/04/wordpress-auto-language-detection-with-nginx</link>
+                <pubDate>Mon, 04 Feb 2013 00:00:00 +0000</pubDate>
+                <guid>/articles/2013/02/04/wordpress-auto-language-detection-with-nginx</guid>
+            </item>
+                    <item>
+                <title>Grand Canyon</title>
+                <description><![CDATA[<p><a href="https://wikipedia.org/wiki/Balboa_Island%2C_Newport_Beach">Wikipedia</a></p>
+
+<p><img src="/assets/img/photo_grand_canyon.jpg" alt="Grand Canyon" /></p>
+]]></description>
+                <link>/articles/2013/01/28/grand-canyon</link>
+                <pubDate>Mon, 28 Jan 2013 00:00:00 +0000</pubDate>
+                <guid>/articles/2013/01/28/grand-canyon</guid>
+            </item>
+                    <item>
+                <title>Balboa Beach</title>
+                <description><![CDATA[<p><img src="/assets/img/photo_balboa_beach.jpg" alt="Grand Canyon" /></p>
+]]></description>
+                <link>/articles/2013/02/03/balboa-beach</link>
+                <pubDate>Sun, 03 Feb 2013 00:00:00 +0000</pubDate>
+                <guid>/articles/2013/02/03/balboa-beach</guid>
+            </item>
+                    <item>
+                <title>Nginx Proxy for CommuniGate with SPDY and OSCP Stapling</title>
+                <description><![CDATA[<p>For quite a long time now I have running CommuniGate web interfaces behind a nginx proxy. Thus it is possible to accelerate the web interface and deny attackers in the first place.</p>
+
+<p>I use nginx 1.3.x with some addational modules like naxsi (WAF) and ngx_log_if (suppress logs in certain cases).</p>
+
+<p>This sample configuration allows you to host the webmail interface and the webadmin part as a nginx vhost.</p>
+
+<p>So you can use modern technics like SPDY and OSCP before they have been integrated into CommuniGate itself (if ever).</p>
+
+<pre><code># HTTP server
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name  example.example.com;
+
+    rewrite          ^(.*)          https://$server_name$1 permanent;
+}
+
+# HTTPS server
+#
+server {
+    listen 443 ssl spdy;
+    listen [::]:443 ssl spdy;
+
+    server_name  mail.example.com;
+
+    # SSL
+    ssl on;
+    ssl_certificate      /etc/ssl/private/mail.example.com.pem;
+    ssl_certificate_key      /etc/ssl/private/mail.example.com.key;
+    ssl_trusted_certificate /etc/ssl/private/mail.example.com.trust;
+
+    ## OCSP Stapling
+    resolver 127.0.0.1;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+    include /etc/nginx/proxy_params;
+
+    # Forbids crawling
+    location /robots.txt {
+        alias /var/www/stuff/norobots.txt;
+    }
+    # Forbids dot files
+    location ~ /\. {
+        deny all;
+    }
+    # Webmail
+    location / {
+        proxy_pass        http://localhost:8100;
+        # WAF
+        include    /etc/nginx/naxsi.rules;
+    }
+    # Webmail Skins
+    location /SkinFiles {
+        access_log_bypass_if ($status = 200);
+        expires 24h;
+        proxy_cache_valid 24h;
+        proxy_pass        http://localhost:8100;
+        # WAF
+        include    /etc/nginx/naxsi.rules;
+    }
+    # Webadmin
+    location /admin {
+        proxy_pass        http://localhost:8010/Master;
+        proxy_set_header   Host             localhost;
+        proxy_redirect http://localhost/Master https://mail.example.com/admin;
+        # WAF
+        include    /etc/nginx/naxsi.rules;
+    }
+    # WAF
+    location /RequestDenied {
+        proxy_pass http://127.0.0.1:8082;
+    }
+}
+</code></pre>
+]]></description>
+                <link>/articles/2013/01/06/nginx-proxy-for-communigate-with-spdy-and-oscp-stapling</link>
+                <pubDate>Sun, 06 Jan 2013 00:00:00 +0000</pubDate>
+                <guid>/articles/2013/01/06/nginx-proxy-for-communigate-with-spdy-and-oscp-stapling</guid>
+            </item>
+                    <item>
+                <title>Curl IPv6 Test</title>
+                <description><![CDATA[<p>Since IPv6 is deployed to customers from providers like Unitymedia and Kabeldeutschland, I have checked if my website is reachable via IPv6 or not. Normally curl uses IPv4, you can force curl to use IPv6 by defining the IPv6 address or adding the param “-6″.</p>
+
+<pre><code>user@laladin# curl -g -k -I -H "Host: www.hellmi.de" http://[2600:3c02::f03c:91ff:fe96:b43f]/
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sat, 05 Jan 2013 16:00:52 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: keep-alive
+X-Pingback: http://www.hellmi.de/xmlrpc.php
+
+user@laladin# curl -g -k -I -6 http://www.hellmi.de/
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sat, 05 Jan 2013 16:06:44 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: keep-alive
+X-Pingback: http://www.hellmi.de/xmlrpc.php
+
+user@laladin# curl -g -k -I -6 http://www6.hellmi.de/
+HTTP/1.1 301 Moved Permanently
+Server: nginx
+Date: Sat, 05 Jan 2013 16:05:22 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: http://www.hellmi.de/
+</code></pre>
+
+<p>There is still some way to go before we are getting used to this ip format:
+2600:3c02::f03c:91ff:fe96:b43f</p>
+
+<p><img src="http://ipv6-test.com/button-ipv6-big.png" alt="IPv6 Test" /></p>
+]]></description>
+                <link>/articles/2013/01/05/curl-ipv6-test</link>
+                <pubDate>Sat, 05 Jan 2013 00:00:00 +0000</pubDate>
+                <guid>/articles/2013/01/05/curl-ipv6-test</guid>
+            </item>
+                    <item>
+                <title>CommuniGate Installation Debian & Ubuntu</title>
+                <description><![CDATA[<p>Stalker released a new version of CommuniGate Pro recently. The installation procedure on Debian and Ubuntu is quite easy using aladin.</p>
+
+<p>Download of the new release</p>
+
+<pre><code>root@aladin:/tmp# wget ftp://stalker.com/pub/CommuniGatePro/5.4/CGatePro-Linux-5.4-8.i386.rpm
+--2012-10-07 16:32:45--  ftp://stalker.com/pub/CommuniGatePro/5.4/CGatePro-Linux-5.4-8.i386.rpm
+           =&gt; »CGatePro-Linux-5.4-8.i386.rpm«
+Auflösen des Hostnamen »stalker.com (stalker.com)«... 72.20.112.34
+Verbindungsaufbau zu stalker.com (stalker.com)|72.20.112.34|:21... verbunden.
+Anmelden als anonymous ... Angemeldet!
+==&gt; SYST ... fertig.    ==&gt; PWD ... fertig.
+==&gt; TYPE I ... fertig.  ==&gt; CWD (1) /pub/CommuniGatePro/5.4 ... fertig.
+==&gt; SIZE CGatePro-Linux-5.4-8.i386.rpm ... 71516878
+==&gt; PASV ... fertig.    ==&gt; RETR CGatePro-Linux-5.4-8.i386.rpm ... fertig.
+Länge: 71516878 (68M) (unmaßgeblich)
+
+100%[================================================================================================================================&gt;] 71.516.878  2,13M/s   in 25s     
+
+2012-10-07 16:33:11 (2,72 MB/s) - »»CGatePro-Linux-5.4-8.i386.rpm«« gespeichert [71516878]
+</code></pre>
+
+<p>Stopping of the service</p>
+
+<pre><code>root@aladin:/tmp# /etc/init.d/communigate stop
+Shutting down the CommuniGate Pro Server
+</code></pre>
+
+<p>Installation</p>
+
+<pre><code>root@aladin:/tmp# alien -i CGatePro-Linux-5.4-8.i386.rpm
+Warning: Skipping conversion of scripts in package CGatePro-Linux: postinst prerm
+Warning: Use the --scripts parameter to include the scripts.
+        dpkg --no-force-overwrite -i cgatepro-linux_5.4-9_i386.deb
+(Lese Datenbank ... 60745 Dateien und Verzeichnisse sind derzeit installiert.)
+Vorbereitung zum Ersetzen von cgatepro-linux 5.4-8 (durch cgatepro-linux_5.4-9_i386.deb) ...
+Ersatz für cgatepro-linux wird entpackt ...
+cgatepro-linux (5.4-9) wird eingerichtet ...
+</code></pre>
+
+<p>Starting the service again</p>
+
+<pre><code>root@aladin:/tmp# /etc/init.d/communigate start
+Starting CommuniGate Proroot@aladin:/tmp#
+</code></pre>
+
+<p>A final test shows that everything is fine again</p>
+
+<pre><code>root@aladin:/tmp# telnet localhost 25
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+220 aladin.members.linode.com ESMTP CommuniGate Pro 5.4.8 is glad to see you!
+quit
+221 aladin.members.linode.com CommuniGate Pro SMTP closing connection
+Connection closed by foreign host.
+</code></pre>
+]]></description>
+                <link>/articles/2012/10/07/communigate-installation-debian-ubuntu</link>
+                <pubDate>Sun, 07 Oct 2012 00:00:00 +0000</pubDate>
+                <guid>/articles/2012/10/07/communigate-installation-debian-ubuntu</guid>
+            </item>
+                    <item>
+                <title>FritzBox as an external PSTN Gateway for CommuniGate Pro</title>
+                <description><![CDATA[<p>A FritzBox can act as a pstn Gateway for CommuniGate. This allows you to run CommuniGate somewhere in the cloud and still use your local phone number.</p>
+
+<p>There are a few steps needed in order to get this setup up and running. I will show you an example, in this case FritzBox has the ip address 192.168.100.2 and the CommuniGate server  is running on a vps. Both systems are connected via a secure openvpn connection.</p>
+
+<ol>
+<li>Configuration of a new lan ip phone device in FritzBox</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_box1.png" alt="Grand Canyon" /></p>
+
+<p><img src="/assets/img/cg_fritz_box2.png" alt="Grand Canyon" /></p>
+
+<ol start="2">
+<li>Adding of some CommuniGate router settings</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_router.png" alt="Grand Canyon" /></p>
+
+<ol start="3">
+<li>Connecting a CommuniGate account to the FritzBox ip phone account (incoming)</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_rsip.png" alt="Grand Canyon" /></p>
+
+<ol start="4">
+<li>Connecting a CommuniGate account to the FritzBox ip phone account (outgoing)</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_pstn1.png" alt="Grand Canyon" /></p>
+]]></description>
+                <link>/articles/2012/08/17/fritzbox-as-an-external-pstn-gateway-for-communigate-pro</link>
+                <pubDate>Fri, 17 Aug 2012 00:00:00 +0000</pubDate>
+                <guid>/articles/2012/08/17/fritzbox-as-an-external-pstn-gateway-for-communigate-pro</guid>
+            </item>
+                    <item>
+                <title>Postfix and CommuniGate running on the same server</title>
+                <description><![CDATA[<p>General speaking one mailserver per server should be well enough. But there are cases where a second servers makes sense. For example nagios or icinga has a mailserver requirement within the package. Ubuntu and debian install postfix in this case automaticlly. This server conflicts with my running CommuniGate Pro Server which occupies the same port.</p>
+
+<p>In order to solve this issue I decided to use a minimal postfix configuration which allows them to work together. There are some benefits, for example local mails don’t get lost in case the real mailserver has a downtime.</p>
+
+<p>CommuniGate Pro listens additionally on 127.0.0.1:26 for this purpose. Normally 127.0.0.1:25 should be ok as well, but there is some kind of mail loop protection in postfix which forbids 127.0.0.1:25 as relayhost.</p>
+
+<p>This is my main.cf</p>
+
+<pre><code>smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
+biff = no
+append_dot_mydomain = no
+readme_directory = no
+
+# TLS parameters
+smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_use_tls=yes
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+myhostname = localhost
+
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = /etc/mailname
+mydestination = localhost
+relayhost = localhost:26
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = loopback-only
+inet_protocols = all
+</code></pre>
+
+<p>All smtp services are commented out in the master.cf:</p>
+
+<pre><code># Postfix master process configuration file.  For details on the format
+# of the file, see the master(5) manual page (command: "man 5 master").
+#
+# Do not forget to execute "postfix reload" after editing this file.
+#
+# ==========================================================================
+# service type  private unpriv  chroot  wakeup  maxproc command + args
+#               (yes)   (yes)   (yes)   (never) (100)
+# ==========================================================================
+#smtp      inet  n       -       -       -       -       smtpd
+#smtp      inet  n       -       -       -       1       postscreen
+#smtpd     pass  -       -       -       -       -       smtpd
+...
+</code></pre>
+]]></description>
+                <link>/articles/2012/08/28/postfix-and-communigate-running-on-the-same-server</link>
+                <pubDate>Tue, 28 Aug 2012 00:00:00 +0000</pubDate>
+                <guid>/articles/2012/08/28/postfix-and-communigate-running-on-the-same-server</guid>
+            </item>
+                    <item>
+                <title>Encrypted VPS backup with dropbox and GnuPG</title>
+                <description><![CDATA[<p>Today it is unclear how long a vps provider stays in business. Therefore I have been looking for a backup solution of my vps server in the cloud.</p>
+
+<ul>
+<li>Reliable backup transfer (daily)</li>
+<li>Mutiple backup revisions</li>
+<li>No unencrypted files on the backup storage</li>
+<li>No private keys or passwords on the source system</li>
+<li>Only one unencrypted copy at any time (running mailserver itself)</li>
+</ul>
+
+<p>Dropbox seems to be perfect for this usecase. Dropbox syncs all changes in the background without X11. Dropbox offers mutiple revisions per file.</p>
+
+<p>GnuPG is the encryption solution. It is possible to save the private key in a secure local location. For encryption purpose only the public key is needed.</p>
+
+<p>My mailserver is using CommuniGate Pro but this method can be used for every other service as well. Backup of a mailserver is quite easy cause a small downtime doesn’t do any harm. Incomming mails will be delayed during the backup process.</p>
+
+<pre><code>#!/bin/sh
+DATE=`date +%Y-%m-%d`
+SOURCE=/var/CommuniGate
+DEST=/home/phil/Dropbox/Share11
+#FILE=$DEST/backup-$DATE.tar.bz2.gpg
+FILE=$DEST/cgate.tar.bz2.gpg
+KEY=ABC12345
+
+PRECMD="/etc/init.d/communigate stop"
+POSTCMD="/etc/init.d/communigate start"
+
+$PRECMD
+sleep 1
+echo "Starting backup operation"
+tar -cjvf - $SOURCE | gpg --encrypt -r $KEY &gt; $FILE
+echo "Finished backup operation"
+date
+du -s -h $FILE
+sleep 1
+$POSTCMD
+find $DEST -type f -name "cgate-*" -mtime +1 -exec rm {} \;
+</code></pre>
+
+<p>This is the result output</p>
+
+<pre><code>Shutting down the CommuniGate Pro Server
+Starting backup operation
+Finished backup operation
+Tue Aug  7 07:39:36 UTC 2012
+279M    /home/phil/Dropbox/Share11/cgate.tar.bz2.gpg
+Starting CommuniGate Pro
+This script can be placed inside the crontab in order to run it daily.
+</code></pre>
+]]></description>
+                <link>/articles/2012/08/07/encrypted-vps-backup-with-dropbox-and-gnupg</link>
+                <pubDate>Tue, 07 Aug 2012 00:00:00 +0000</pubDate>
+                <guid>/articles/2012/08/07/encrypted-vps-backup-with-dropbox-and-gnupg</guid>
+            </item>
+                    <item>
+                <title>Weekly GeoIP update</title>
+                <description><![CDATA[<p>Ubuntu ships a quite old GeoIP database. So I wrote a small script which updates all files</p>
+
+<pre><code>#!/bin/sh
+DEST_DIR=/usr/share/GeoIP
+SRV_BASE=http://geolite.maxmind.com/download/geoip/database
+
+cd $DEST_DIR
+wget -q $SRV_BASE/GeoLiteCity.dat.gz
+gzip -d -f GeoLiteCity.dat.gz
+wget -q $SRV_BASE/GeoLiteCountry/GeoIP.dat.gz
+gzip -d -f GeoIP.dat.gz
+wget -q $SRV_BASE/GeoIPv6.dat.gz
+gzip -d -f GeoIPv6.dat.gz
+wget -q $SRV_BASE/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
+gzip -d -f GeoLiteCityv6.dat
+</code></pre>
+
+<p>In order to run it weekly just store it as /etc/cron.weekly/geoip_update and make it executable.</p>
+]]></description>
+                <link>/articles/2012/08/11/weekly-geoip-update</link>
+                <pubDate>Sat, 11 Aug 2012 00:00:00 +0000</pubDate>
+                <guid>/articles/2012/08/11/weekly-geoip-update</guid>
+            </item>
+                    <item>
+                <title>Sydney Harbour Bridge</title>
+                <description><![CDATA[<p><a href="https://wikipedia.org/wiki/Sydney_Harbour_Bridge">Wikipedia</a></p>
+
+<p><img src="/assets/img/photo_sydney_harbour_bridge.jpg" alt="Sydney Harbour Bridge" /></p>
+]]></description>
+                <link>/articles/2008/01/12/sydney-harbour-bridge</link>
+                <pubDate>Sat, 12 Jan 2008 00:00:00 +0000</pubDate>
+                <guid>/articles/2008/01/12/sydney-harbour-bridge</guid>
+            </item>
+                    <item>
+                <title>Golden Gate Bridge</title>
+                <description><![CDATA[<p><a href="https://wikipedia.org/wiki/Golden_Gate_Bridge">Wikipedia</a></p>
+
+<p><img src="/assets/img/photo_golden_gate_bridge.jpg" alt="Golden Gate Bridge" /></p>
+]]></description>
+                <link>/articles/2012/07/23/golden-gate-bridge</link>
+                <pubDate>Mon, 23 Jul 2012 00:00:00 +0000</pubDate>
+                <guid>/articles/2012/07/23/golden-gate-bridge</guid>
+            </item>
+                    <item>
+                <title>Shanghai</title>
+                <description><![CDATA[<p><a href="https://wikipedia.org/wiki/Shanghai">Wikipedia</a></p>
+
+<p><img src="/assets/img/photo_shanghai.jpg" alt="Sydney Harbour Bridge" /></p>
+]]></description>
+                <link>/articles/2011/03/11/shanghai</link>
+                <pubDate>Fri, 11 Mar 2011 00:00:00 +0000</pubDate>
+                <guid>/articles/2011/03/11/shanghai</guid>
+            </item>
+                    <item>
+                <title>Niagara Falls</title>
+                <description><![CDATA[<p><a href="https://wikipedia.org/wiki/Niagara_Falls">Wikipedia</a></p>
+
+<p><img src="/assets/img/photo_niagara_falls.jpg" alt="Sydney Harbour Bridge" /></p>
+]]></description>
+                <link>/articles/2010/10/07/niagara-falls</link>
+                <pubDate>Thu, 07 Oct 2010 00:00:00 +0000</pubDate>
+                <guid>/articles/2010/10/07/niagara-falls</guid>
+            </item>
+                    <item>
+                <title>DFRWS 2008 Forensics Challenge</title>
+                <description><![CDATA[<p>This year I took part in an international forensics challange. The goal was to gather information out of a network capture, memory dump and some gathered files from a home directory in order to answer these questions:</p>
+
+<blockquote>
+  <ol>
+  <li>What relevant user activity can be reconstructed from the data and what does it show?</li>
+  <li>Is there evidence of inappropriate or suspicious activity on the system related to the user?</li>
+  <li>Is there evidence of collaboration with an outside party? If so, what can be determined about the identity of the outside party? How was any collaboration conducted?</li>
+  <li>Is there evidence that sensitive data was copied? If so, what can be determined about that data and the manner of transfer?</li>
+  </ol>
+</blockquote>
+
+<p>Further details can be found here
+<a href="http://www.dfrws.org/2008/challenge/submission.shtml">http://www.dfrws.org/2008/challenge/submission.shtml</a></p>
+
+<p>Meanwhile the jury decided, I am proud that I achieved the fourth place right away:</p>
+
+<ul>
+<li>First Place: Michael I. Cohen, David J. Collett, AAron Walters</li>
+<li>Second Place: Rodney M. Jokerst, Yanni A. Kouskoulas, Donna C. Paulhamus, Karla J. Saur, Kevin Z. Snow, Brian M. Whipple (JHU APL)</li>
+<li>Third Place: Devin Paden (SpectreWorks)</li>
+<li>Fourth Place: Philipp Hellmich</li>
+<li>Fifth Place: Ricci S. C. Ieong, Lunar Au, HC. Leung, Luky Siu, Kenneth Tse (eWalker)</li>
+</ul>
+
+<p>My competitors mosty worked in teams and had much more ressources to solve this challange.</p>
+
+<blockquote>
+  <p>Philipp Hellmich used PyFlag for file and network analysis and to aggregate and report on findings. Used strings to extract information from memory. Searched browser history file, memory strings and web traffic in pcap to determine user activity. Created a PHP script to recover the ZIP file from pcap file, broke the ZIP password file, and recovered evidence preservation from mc history.</p>
+</blockquote>
+
+<p>The full results can be found here <a href="http://www.dfrws.org/2008/challenge/results.shtml">http://www.dfrws.org/2008/challenge/results.shtml</a></p>
+]]></description>
+                <link>/articles/2008/07/10/dfrws-2008-forensics-challenge</link>
+                <pubDate>Thu, 10 Jul 2008 00:00:00 +0000</pubDate>
+                <guid>/articles/2008/07/10/dfrws-2008-forensics-challenge</guid>
+            </item>
+            </channel>
+</rss>

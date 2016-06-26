@@ -1,0 +1,167 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+<title>FritzBox as an external PSTN Gateway for CommuniGate Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How to run configure a FritzBox as an external PSTN Gateway for CommuniGate Pro">
+<meta name="author" content="Philipp H">
+<meta name="generator" content="Spress v2.1.2">
+
+
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FritzBox as an external PSTN Gateway for CommuniGate Pro">
+<meta property="og:description" content="How to run configure a FritzBox as an external PSTN Gateway for CommuniGate Pro">
+<meta property="og:url" content="/articles/2012/08/17/fritzbox-as-an-external-pstn-gateway-for-communigate-pro">
+<meta property="og:site_name" content="Philipps Homepage">
+
+<link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/touch-icon-iphone.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/assets/img/touch-icon-ipad.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-iphone-retina.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-ipad-retina.png">
+
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="/assets/css/style.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand">
+            <a class="label label-primary" href="/">Philipps Homepage</a>
+        </div>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+        <li><a href="/">
+        Home</a>
+    </li>
+        <li><a href="/projects">
+        Projects</a>
+    </li>
+    </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+</div>
+
+        <div class="container spresso-wrap">
+                <article class="post">
+    <header>
+        <h1>
+            <a href="/articles/2012/08/17/fritzbox-as-an-external-pstn-gateway-for-communigate-pro">FritzBox as an external PSTN Gateway for CommuniGate Pro</a>
+        </h1>
+    </header>
+    
+    <p>A FritzBox can act as a pstn Gateway for CommuniGate. This allows you to run CommuniGate somewhere in the cloud and still use your local phone number.</p>
+
+<p>There are a few steps needed in order to get this setup up and running. I will show you an example, in this case FritzBox has the ip address 192.168.100.2 and the CommuniGate server  is running on a vps. Both systems are connected via a secure openvpn connection.</p>
+
+<ol>
+<li>Configuration of a new lan ip phone device in FritzBox</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_box1.png" alt="Grand Canyon" /></p>
+
+<p><img src="/assets/img/cg_fritz_box2.png" alt="Grand Canyon" /></p>
+
+<ol start="2">
+<li>Adding of some CommuniGate router settings</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_router.png" alt="Grand Canyon" /></p>
+
+<ol start="3">
+<li>Connecting a CommuniGate account to the FritzBox ip phone account (incoming)</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_rsip.png" alt="Grand Canyon" /></p>
+
+<ol start="4">
+<li>Connecting a CommuniGate account to the FritzBox ip phone account (outgoing)</li>
+</ol>
+
+<p><img src="/assets/img/cg_fritz_pstn1.png" alt="Grand Canyon" /></p>
+
+    
+            <footer>    
+            <p>
+            	Posted by Philipp H on <time pubdate="pubdate">2012-08-17</time>
+            </p>
+
+                        <ul class="list-unstyled">
+                                    <li>
+                        <i class="fa fa-tags"></i>
+                                                    <a href="/tags/posts">posts</a>, 
+                                                    <a href="/tags/english">english</a>, 
+                                                    <a href="/tags/communigate">communigate</a>, 
+                                                    <a href="/tags/postfix">postfix</a> 
+                                            </li>
+                                                    <li>
+                        <i class="fa fa-folder"></i>
+                                                    <a href="/categories/articles">articles</a> 
+                                            </li>
+                            </ul>
+                    </footer>
+
+            </article>
+        </div>
+            
+        <footer id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-inline">
+        <li><a href="https://github.com/yosymfony/Spress-theme-spresso">
+        Go to Spresso theme web</a>
+    </li>
+    </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <ul class="list-inline">
+        
+        
+        
+        
+        <li>
+        <a href="https://github.com/runningman84">
+            <i class="fa fa-github fa-2x"></i>
+        </a>
+    </li>
+        
+        
+    </ul>
+                    </div>
+                </div>
+                <p class="text-center">
+                    <a href="https://github.com/yosymfony/Spress-theme-spresso" title="Spresso theme">
+                        <img src="/assets/img/spresso-logo.png"/>
+                    </a>
+                </p>
+                <p class="text-center">
+                    &copy; 2016 Philipp H.
+                    Powered by <a href="http://spress.yosymfony.com">Spress</a>.
+                </p>
+            </div>
+            
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+            <script src="/assets/js/bootstrap.min.js"></script>
+            
+                            <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+                <script>hljs.initHighlightingOnLoad();</script>
+                        
+                        </footer>
+    </body>
+</html>
