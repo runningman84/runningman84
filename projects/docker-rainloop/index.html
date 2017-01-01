@@ -2,18 +2,18 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-<title>Toml parser for PHP</title>
+<title>Rainloop Container</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="A PHP parser for TOML compatible with TOML v0.4.0.">
+<meta name="description" content="Docker image of Railoop webmail">
 <meta name="author" content="Philipp H">
 <meta name="generator" content="Spress v2.1.2">
 
 
 <meta property="og:locale" content="en_US">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Toml parser for PHP">
-<meta property="og:description" content="A PHP parser for TOML compatible with TOML v0.4.0.">
-<meta property="og:url" content="/projects/toml-parser-php">
+<meta property="og:title" content="Rainloop Container">
+<meta property="og:description" content="Docker image of Railoop webmail">
+<meta property="og:url" content="/projects/docker-rainloop">
 <meta property="og:site_name" content="Philipps Homepage">
 
 <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
@@ -58,26 +58,138 @@
 </div>
 
         <div class="container spresso-wrap">
-                <h2>Toml parse for PHP</h2>
+                <h2>Rainloop Webmail</h2>
 
-<p>A PHP parser for TOML compatible with TOML v0.4.0.</p>
+<p><a href="https://hub.docker.com/r/runningman84/rainloop" title="Click to view the image on Docker Hub"><img src="https://images.microbadger.com/badges/version/runningman84/rainloop.svg" alt="" /></a>
+<a href="https://hub.docker.com/r/runningman84/rainloop" title="Click to view the image on Docker Hub"><img src="https://images.microbadger.com/badges/image/runningman84/rainloop.svg" alt="" /></a>
+<a href="https://hub.docker.com/r/runningman84/rainloop" title="Click to view the image on Docker Hub"><img src="https://img.shields.io/docker/stars/runningman84/rainloop.svg" alt="" /></a>
+<a href="https://hub.docker.com/r/runningman84/rainloop" title="Click to view the image on Docker Hub"><img src="https://img.shields.io/docker/pulls/runningman84/rainloop.svg" alt="" /></a></p>
 
-<p><a href="https://travis-ci.org/yosymfony/Toml"><img src="https://travis-ci.org/yosymfony/Toml.png?branch=master" alt="Build Status" /></a>
-<a href="https://packagist.org/packages/yosymfony/toml"><img src="https://poser.pugx.org/yosymfony/toml/v/stable.png" alt="Latest Stable Version" /></a>
-<a href="https://packagist.org/packages/yosymfony/toml"><img src="https://poser.pugx.org/yosymfony/toml/downloads.png" alt="Total Downloads" /></a></p>
+<h2>Introduction</h2>
 
-<h3>Installation</h3>
+<p>This docker image installs Rainloop Webmail on Ubuntu Xenial.</p>
 
-<p>Use <a href="http://getcomposer.org/">Composer</a> to install Yosyfmony Toml package:</p>
+<p>A documentation can be found here:
+<a href="http://www.rainloop.net/">http://www.rainloop.net/</a></p>
 
-<p>Add the following to your <code>composer.json</code> and run <code>composer update</code>.</p>
+<h2>Install</h2>
 
-<pre><code class="json">"require": {
-    "yosymfony/toml": "0.3.*"
-}
+<pre><code class="sh">docker pull runningman84/rainloop
 </code></pre>
 
-<p>More informations about the package on <a href="https://packagist.org/packages/yosymfony/toml">Packagist</a>.</p>
+<h2>Running</h2>
+
+<pre><code class="sh">docker run -d -P -p 80:80 runningman84/rainloop
+</code></pre>
+
+<p>The container can be configured using these ENVIRONMENT variables:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Key</th>
+  <th>Description</th>
+  <th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>APACHE_MIN_CHILDS</td>
+  <td>Apache MPM Prefork StartServers</td>
+  <td>5</td>
+</tr>
+<tr>
+  <td>APACHE_MAX_CHILDS</td>
+  <td>Apache MPM Prefork MaxRequestWorkers</td>
+  <td>50</td>
+</tr>
+<tr>
+  <td>APACHE_MIN_CHILDS_SPARE</td>
+  <td>Apache MPM Prefork MinSpareServers</td>
+  <td>5</td>
+</tr>
+<tr>
+  <td>APACHE_MAX_CHILDS_SPARE</td>
+  <td>Apache MPM Prefork MaxSpareServers</td>
+  <td>10</td>
+</tr>
+<tr>
+  <td>APACHE_SERVER_NAME</td>
+  <td>Apache ServerName</td>
+  <td>rainloop.loc</td>
+</tr>
+<tr>
+  <td>APACHE_SERVER_ADMIN</td>
+  <td>Apache ServerAdmin</td>
+  <td>webmaster@rainloop.loc</td>
+</tr>
+<tr>
+  <td>PHP_MAX_POST_SIZE</td>
+  <td>PHP post_max_size (should outmatch PHP_MAX_UPLOAD_SIZE)</td>
+  <td>20M</td>
+</tr>
+<tr>
+  <td>PHP_MAX_UPLOAD_SIZE</td>
+  <td>PHP upload_max_filesize</td>
+  <td>8M</td>
+</tr>
+<tr>
+  <td>PHP_MAX_UPLOADS</td>
+  <td>PHP max_file_uploads</td>
+  <td>20</td>
+</tr>
+<tr>
+  <td>PHP_MAX_EXECUTION_ZIME</td>
+  <td>PHP max_execution_time</td>
+  <td>30</td>
+</tr>
+<tr>
+  <td>RAINLOOP_ADMIN_LOGIN</td>
+  <td>Rainloop admin user</td>
+  <td>admin</td>
+</tr>
+<tr>
+  <td>RAINLOOP_ADMIN_PASSWORD</td>
+  <td>Rainloop admin password</td>
+  <td>12345</td>
+</tr>
+</tbody>
+</table>
+
+<p>To access admin panel, use URL of the following kind: http://product_installation_URL/?admin</p>
+
+<h2>Finally</h2>
+
+<p>You can integrate rainloop with my rainloop docker image in order to have a nice webmail interface:</p>
+
+<pre><code>rainloop:
+  image: runningman84/rainloop
+  mem_limit: 256m
+  depends_on:
+    - rainloop
+  ports:
+    - 80:80
+  environment:
+    - APACHE_SERVER_NAME=webmail.example.com
+rainloop:
+  image: runningman84/rainloop
+  links:
+    - spamd:spamd
+  ports:
+    - 25:25
+    - 143:143
+    - 8100:8100
+    - 9100:9100
+    - 8010:8010
+    - 9010:9010
+  environment:
+    - CGPAV_SPAMASSASIN_HOST=spamd
+    - MAILSERVER_DOMAIN=example.com
+    - MAILSERVER_HOSTNAME=mail.example.com
+    - HELPER_THREADS=1
+spamd:
+  image: runningman84/spamd
+</code></pre>
 
         </div>
             
@@ -113,7 +225,7 @@
                     </a>
                 </p>
                 <p class="text-center">
-                    &copy; 2016 Philipp H.
+                    &copy; 2017 Philipp H.
                     Powered by <a href="http://spress.yosymfony.com">Spress</a>.
                 </p>
             </div>

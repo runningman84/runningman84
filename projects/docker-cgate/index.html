@@ -1,0 +1,233 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+<title>CommuniGate Container</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Docker image of CommuniGate Pro messaging server">
+<meta name="author" content="Philipp H">
+<meta name="generator" content="Spress v2.1.2">
+
+
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CommuniGate Container">
+<meta property="og:description" content="Docker image of CommuniGate Pro messaging server">
+<meta property="og:url" content="/projects/docker-cgate">
+<meta property="og:site_name" content="Philipps Homepage">
+
+<link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/img/touch-icon-iphone.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/assets/img/touch-icon-ipad.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/assets/img/touch-icon-iphone-retina.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/assets/img/touch-icon-ipad-retina.png">
+
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="/assets/css/style.css" rel="stylesheet" media="screen">
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand">
+            <a class="label label-primary" href="/">Philipps Homepage</a>
+        </div>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+        <li><a href="/">
+        Home</a>
+    </li>
+        <li><a href="/projects">
+        Projects</a>
+    </li>
+    </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+</div>
+
+        <div class="container spresso-wrap">
+                <h2>CommuniGate docker image</h2>
+
+<p><a href="https://hub.docker.com/r/runningman84/cgate" title="Click to view the image on Docker Hub"><img src="https://images.microbadger.com/badges/version/runningman84/cgate.svg" alt="" /></a>
+<a href="https://hub.docker.com/r/runningman84/cgate" title="Click to view the image on Docker Hub"><img src="https://images.microbadger.com/badges/image/runningman84/cgate.svg" alt="" /></a>
+<a href="https://hub.docker.com/r/runningman84/cgate" title="Click to view the image on Docker Hub"><img src="https://img.shields.io/docker/stars/runningman84/cgate.svg" alt="" /></a>
+<a href="https://hub.docker.com/r/runningman84/cgate" title="Click to view the image on Docker Hub"><img src="https://img.shields.io/docker/pulls/runningman84/cgate.svg" alt="" /></a></p>
+
+<h2>Introduction</h2>
+
+<p>This docker image installs CommuniGate Pro using Alpine Linux.</p>
+
+<p>A documentation can be found here:
+<a href="https://www.communigate.com/communigatepro/">https://www.communigate.com/communigatepro/</a></p>
+
+<h2>Install</h2>
+
+<pre><code class="sh">docker pull runningman84/cgate
+</code></pre>
+
+<h2>Running</h2>
+
+<pre><code class="sh">docker run -d -P -p 8010:8010 -p 8100:8100 -p 25:25 -p 110:110 -p 143:143 runningman84/cgate
+</code></pre>
+
+<p>CommuniGate provides a lot of servies the corresponding ports can be seen in this output:</p>
+
+<pre><code>cgate_1         | 19:54:55.527 2 HTTPU [0.0.0.0]:8100 listener ready for connections
+cgate_1         | 19:54:55.527 2 HTTPA [0.0.0.0]:8010 listener ready for connections
+cgate_1         | 19:54:55.527 2 HTTPA [0.0.0.0]:9010 listener ready for connections
+cgate_1         | 19:54:55.528 2 HTTPU [0.0.0.0]:9100 listener ready for connections
+cgate_1         | 19:54:55.528 2 PWD [0.0.0.0]:106 listener ready for connections
+cgate_1         | 19:54:55.528 2 STUN [0.0.0.0]:3478 listener ready for connections
+cgate_1         | 19:54:55.528 2 STUN [0.0.0.0]:5349 listener ready for connections
+cgate_1         | 19:54:55.528 2 POP [0.0.0.0]:110 listener ready for connections
+cgate_1         | 19:54:55.528 2 ACAP [0.0.0.0]:674 listener ready for connections
+cgate_1         | 19:54:55.528 2 LDAP [0.0.0.0]:636 listener ready for connections
+cgate_1         | 19:54:55.528 2 LDAP [0.0.0.0]:389 listener ready for connections
+cgate_1         | 19:54:55.528 2 IMAP [0.0.0.0]:143 listener ready for connections
+cgate_1         | 19:54:55.528 2 IMAP [0.0.0.0]:993 listener ready for connections
+cgate_1         | 19:54:55.528 2 FTP [0.0.0.0]:8021 listener ready for connections
+cgate_1         | 19:54:55.528 2 SMTP [0.0.0.0]:25 listener ready for connections
+cgate_1         | 19:54:55.528 2 SIP [0.0.0.0]:5060 listener ready for connections
+cgate_1         | 19:54:55.528 2 SIP [0.0.0.0]:5061 listener ready for connections
+cgate_1         | 19:54:55.528 2 XMPP [0.0.0.0]:5222 listener ready for connections
+cgate_1         | 19:54:55.528 2 XMPP [0.0.0.0]:5269 listener ready for connections
+cgate_1         | 19:54:55.528 2 XIMSS [0.0.0.0]:11024 listener ready for connections
+</code></pre>
+
+<p>The container can be configured using these ENVIRONMENT variables:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Key</th>
+  <th>Description</th>
+  <th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>MAILSERVER_DOMAIN</td>
+  <td>The primary domain of the mailserver</td>
+  <td>example.org</td>
+</tr>
+<tr>
+  <td>MAILSERVER_HOSTNAME</td>
+  <td>The hostname of the mailserver</td>
+  <td>mail.example.org</td>
+</tr>
+<tr>
+  <td>HELPER_THREADS</td>
+  <td>The number of helper threads for cgpav and DKIM</td>
+  <td>3</td>
+</tr>
+<tr>
+  <td>CGPAV_SPAMASSASIN_HOST</td>
+  <td>The hostname of the spamd service</td>
+  <td>localhost</td>
+</tr>
+<tr>
+  <td>CGPAV_SPAMASSASIN_PORT</td>
+  <td>The port of the spamd service</td>
+  <td>783</td>
+</tr>
+<tr>
+  <td>CGPAV_VIRUS_ACTION</td>
+  <td>How to handle infected mails</td>
+  <td>none (virus scanning disabled)</td>
+</tr>
+<tr>
+  <td>CGPAV_SPAM_ACTION</td>
+  <td>How to handle spam mais</td>
+  <td>addheaderjunk</td>
+</tr>
+</tbody>
+</table>
+
+<p>CGPAV and DKIM filters are preconfigured. The CGPAV filter scans using spamassassin and the DKIM filter signs and verifes messages.</p>
+
+<h2>Finally</h2>
+
+<p>You should use an extra volume for /var/CommuniGate to store the user data outside this container.</p>
+
+<p>An intergration with my spamd container can look like this:</p>
+
+<pre><code>cgate:
+  image: runningman84/cgate
+  links:
+    - spamd:spamd
+  ports:
+    - 25:25
+    - 143:143
+    - 8100:8100
+    - 9100:9100
+    - 8010:8010
+    - 9010:9010
+  environment:
+    - CGPAV_SPAMASSASIN_HOST=spamd
+    - MAILSERVER_DOMAIN=example.com
+    - MAILSERVER_HOSTNAME=mail.example.com
+    - HELPER_THREADS=1
+spamd:
+  image: runningman84/spamd
+</code></pre>
+
+        </div>
+            
+        <footer id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-inline">
+        <li><a href="https://github.com/yosymfony/Spress-theme-spresso">
+        Go to Spresso theme web</a>
+    </li>
+    </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <ul class="list-inline">
+        
+        
+        
+        
+        <li>
+        <a href="https://github.com/runningman84">
+            <i class="fa fa-github fa-2x"></i>
+        </a>
+    </li>
+        
+        
+    </ul>
+                    </div>
+                </div>
+                <p class="text-center">
+                    <a href="https://github.com/yosymfony/Spress-theme-spresso" title="Spresso theme">
+                        <img src="/assets/img/spresso-logo.png"/>
+                    </a>
+                </p>
+                <p class="text-center">
+                    &copy; 2017 Philipp H.
+                    Powered by <a href="http://spress.yosymfony.com">Spress</a>.
+                </p>
+            </div>
+            
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+            <script src="/assets/js/bootstrap.min.js"></script>
+            
+                            <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+                <script>hljs.initHighlightingOnLoad();</script>
+                        
+                    </footer>
+    </body>
+</html>

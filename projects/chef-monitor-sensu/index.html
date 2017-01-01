@@ -2,18 +2,18 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-<title>HttpServer</title>
+<title>Sensu Monitor Cookbook</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="A simple HTTP server for PHP.">
+<meta name="description" content="Chef cookbook for sensu client / server with rabbitmq, redis and snssqs transport ">
 <meta name="author" content="Philipp H">
 <meta name="generator" content="Spress v2.1.2">
 
 
 <meta property="og:locale" content="en_US">
 <meta property="og:type" content="article">
-<meta property="og:title" content="HttpServer">
-<meta property="og:description" content="A simple HTTP server for PHP.">
-<meta property="og:url" content="/projects/http-server-php">
+<meta property="og:title" content="Sensu Monitor Cookbook">
+<meta property="og:description" content="Chef cookbook for sensu client / server with rabbitmq, redis and snssqs transport ">
+<meta property="og:url" content="/projects/chef-monitor-sensu">
 <meta property="og:site_name" content="Philipps Homepage">
 
 <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Philipps Homepage Feed">
@@ -58,24 +58,72 @@
 </div>
 
         <div class="container spresso-wrap">
-                <h2>A simple HTTP server for PHP.</h2>
+                <h2>Chef Monitor Cookbook</h2>
 
-<p>HttpServer is a simple HTTP server powerd <a href="http://reactphp.org/">REACT</a>.</p>
+<p><a href="https://travis-ci.org/runningman84/chef-monitor"><img src="https://travis-ci.org/runningman84/chef-monitor.svg?branch=master" alt="Build Status" /></a></p>
 
-<p><a href="https://travis-ci.org/yosymfony/HttpServer"><img src="https://travis-ci.org/yosymfony/HttpServer.svg?branch=master" alt="Build Status" /></a></p>
+<h1>Description</h1>
 
-<h2>Installation</h2>
+<p>Monitor is a cookbook for monitoring services, using Sensu, a
+monitoring framework. The default recipe installs &amp; configures the
+Sensu client (monitoring agent), as well as common service check
+dependencies. This cookbook supports multiple transports:</p>
 
-<p>Use <a href="http://getcomposer.org/">Composer</a> to install Yosyfmony HttpServer package:</p>
+<ul>
+<li>rabbitmq (default)</li>
+<li>redis</li>
+<li><a href="https://github.com/SimpleFinance/sensu-transport-snssqs">snssqs</a></li>
+</ul>
 
-<p>Add the following to your <code>composer.json</code> and run <code>composer update</code>.</p>
+<p>The master recipe installs &amp; configures the Sensu server,
+API, dashboard, &amp; their dependencies (eg. RabbitMQ &amp; Redis).
+This cookbook also supports external redis servers using the <code>redis_address</code>
+attribute.</p>
 
-<pre><code>"require": {
-    "yosymfony/httpserverl": "1.2.*"
-}
-</code></pre>
+<p>Autoscaling sensu servers can be build using an external redis (e.g. aws elastic cache)
+and snssqs transport (using sns and sqs and standalone only checks).</p>
 
-<p>More information about the package on <a href="https://packagist.org/packages/yosymfony/httpserver">Packagist</a>.</p>
+<p>The cookbook contains preconfigured handlers for ec2 and chef
+in order to remove ephemeral instances without creating incidents.</p>
+
+<p>Learn more about Sensu <a href="http://docs.sensuapp.org/">Here</a>.</p>
+
+<h1>Requirements</h1>
+
+<p>The <a href="http://community.opscode.com/cookbooks/sensu">Sensu</a> and <a href="http://community.opscode.com/cookbooks/sudo">sudo</a> cookbooks.</p>
+
+<h1>Attributes</h1>
+
+<p><code>node["monitor"]["transport"]</code> - Defaults to rabbitmq.
+Supports rabbitmq, redis and snssqs</p>
+
+<p><code>node["monitor"]["master_address"]</code> - Bypass the chef node search and
+explicitly set the address to reach the master server. Only used
+for rabbitmq and redis transport.</p>
+
+<p><code>node["monitor"]["environment_aware_search"]</code> - Defaults to false.
+If true, will limit search to the node's chef_environment.</p>
+
+<p><code>node["monitor"]["use_local_ipv4"]</code> - Defaults to false. If true,
+use cloud local&#95;ipv4 when available instead of public&#95;ipv4.</p>
+
+<p><code>node["monitor"]["sensu_plugin_version"]</code> - Sensu Plugin library
+version.</p>
+
+<p><code>node["monitor"]["additional_client_attributes"]</code> - Additional client
+attributes to be passed to the sensu_client LWRP.</p>
+
+<p><code>node["monitor"]["default_handlers"]</code> - Default event handlers.</p>
+
+<p><code>node["monitor"]["metric_handlers"]</code> - Metric event handlers.</p>
+
+<h1>Usage</h1>
+
+<p>Example: To monitor a Chef node, include
+"recipe[monitor::default]" in its run list.</p>
+
+<p>Please create application specific checks within your application cookbooks.
+This cookbook only contains base checks.</p>
 
         </div>
             
@@ -111,7 +159,7 @@
                     </a>
                 </p>
                 <p class="text-center">
-                    &copy; 2016 Philipp H.
+                    &copy; 2017 Philipp H.
                     Powered by <a href="http://spress.yosymfony.com">Spress</a>.
                 </p>
             </div>
